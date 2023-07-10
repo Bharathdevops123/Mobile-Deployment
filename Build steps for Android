@@ -1,4 +1,12 @@
-1) Add below lines in npmrc file
+1) Install node js on Agent server (it will install npm automatically)
+check for npm -v
+
+b) check whether Java is installed or not
+Java --Version
+
+c) Install SDK 
+
+2) Add below lines in npmrc file
 
 npmrc: @fortawesome:registry=https://npm.fontawesome.com/
 //npm.fontawesome.com/:_authToken=<Token Value>
