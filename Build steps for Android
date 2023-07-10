@@ -2,3 +2,5 @@
 
 npmrc: @fortawesome:registry=https://npm.fontawesome.com/
 //npm.fontawesome.com/:_authToken=<Token Value>
+
+If there are dependencies from Fontawesome they will be authenticated and deownloaded in npm install step.
