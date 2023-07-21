@@ -1,14 +1,166 @@
 1) Install node js on Agent server (it will install npm automatically)
 check for npm -v
 
-b) check whether Java is installed or not
+b) Install Android Studio ( it wil install Java, React native and Android SDK automatically)
+
+c) check whether Java is installed or not
 Java --Version
 
-c) Install SDK 
+d) check whether sdk is installed or not.
 
-2) Add below lines in npmrc file
+Go to Android studio and tools and SDK manager and see the version.
+
+In the source code (android/build.gradle) file you will have below.
+ext {
+         buildToolsVersion = "29.0.2"
+         minSdkVersion = 16
+         compileSdkVersion = 29
+-        targetSdkVersion = 29
++        targetSdkVersion = 29       
++        versionName = getMyVersionName()
++        versionCode = getMyVersionCode()
+     }
+
+by seeing at the source code you can install the required version.
+
+2)Add below lines in npmrc file
+
+you can find npmrc file at below location
+C:\Users\your-username\AppData\Roaming\npm\node_modules\npm
 
 npmrc: @fortawesome:registry=https://npm.fontawesome.com/
-//npm.fontawesome.com/:_authToken=<Token Value>
+//npm.fontawesome.com/:_authToken=<Value>
 
-If there are dependencies from Fontawesome they will be authenticated and deownloaded in npm install step.
+3) Set environment variables
+ANDROID_HOME = C:\Users\Bharath\AppData\Local\Android\sdk
+SET PATH=$PATH:$ANDROID_HOME/emulator
+SET PATH=$PATH:$ANDROID_HOME/tools
+SET PATH=$PATH:$ANDROID_HOME/tools/bin
+SET PATH=$PATH:$ANDROID_HOME/platform-tools
+
+(or) 
+you can get the value and add manually
+
+ANDROID_HOME = C:\Users\Bharath\AppData\Local\Android\sdk
+Path  = C:\Users\Bharath\AppData\Local\Android\Sdk\platform-tools
+C:\Users\Bharath\AppData\Local\Android\sdk\emulator
+C:\Users\Bharath\AppData\Local\Android\sdk\tools
+C:\Users\Bharath\AppData\Local\Android\sdk\tools\bin
+
+
+
+4) For Debug version APK we need to create bundle first and then create APK.
+------------------------------------------------------------------------
+Create assets folder in the source code android\app\src\main\
+Open command prompt
+Check react-native -v 
+We should have atleast react-native 0.58 version
+
+Go to source code on your local Example D:\perfcode\9\s\
+Run below command
+
+npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
+
+This will generate a bundle file (index.Android.bundle) at below location:
+D:\perfcode\9\s\android\app\src\main\assets
+
+Go to source code on your local Example D:\perfcode\9\s\
+
+run below command 
+gradlew assembleDebug
+
+Apk file will be created here
+D:\perfcode\9\s\android\app\build\outputs\apk\debug
+_________________________________________________________________
+
+For Release version apk we just need to run the below command
+----------------------------------------------------------
+
+Create assets folder in the source code android\app\src\main\
+
+
+Go to D:\perfcode\9\s\
+Run below command
+
+npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
+
+Go to D:\perfcode\9\s\android
+
+
+gradlew assembleRelease
+
+You need to create this way in the Build tasks:
+-----------------------------------------------
+Add command prompt Task to the build for Bundle:
+
+   D:   
+   cd $(Build.SourcesDirectory)\   
+   npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res  
+   
+Add command prompt task and add below code to generate .apk file
+D:
+cd $(Build.SourcesDirectory)\android\
+gradlew assembleDebug
+
+---------------------------------------------------------------------------------------------
+
+5) Copy files to artifact directory
+steps:
+- task: CopyFiles@2
+  displayName: 'Copy Files to: $(build.artifactstagingdirectory)'
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)\android\app\build\outputs\apk\debug\'
+    Contents: '*.apk'
+    TargetFolder: '$(build.artifactstagingdirectory)'
+    OverWrite: true
+  condition: succeededOrFailed()
+
+
+6) Publish artifacts to Drop Location
+
+steps:
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: drop'
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)'
+  condition: succeededOrFailed()
+
+
+7) Upload .apk file to Saucelab for testing:
+If we are using sauce labs for Testing. Then we need to upload the apk file to sauce lab
+First we need to install Curl on Agent server because saucelabs api needs this to connect from windows to sauce labs.
+
+If you have Git for Windows installed (if you downloaded Git from git-scm.com, the answer is yes), you have curl.exe under:
+
+ C:\Program Files\Git\mingw64\bin\
+Simply add the above path to PATH to system Environment variables and Local variables.
+
+C:\Program Files\Git\mingw64\bin\
+
+If you are running from server above path is fine. When you are execting from the build the the build fails as
+curl is not recognized as internal or external command. so you need to add below path to system environment variables and Local variables.
+C:\Program Files\Git\mingw64\bin\curl.exe
+
+Add below script in command prompt:
+
+D:
+cd $(build.artifactstagingdirectory)\
+curl -u "MedojuB2:AccessKey" -X POST "https://api.us-west-1.saucelabs.com/v1/storage/upload" --form payload=@"$(build.artifactstagingdirectory)/app-debug.apk" -v
+
+
+
+8) Generate Keystore File on any windows machine 
+
+Command Format: keytool -genkey -v -storetype PKCS12 -keystore your_key_name.keystore -alias your_key_alias -keyalg RSA -keysize 2048 -validity 10000
+
+Enter your keystore password: password123
+Re-enter new password: password123
+What is your first and last name? [unknown]: Dani Williams
+What is the name of your organizational unit? [unknown]: Sample Company
+What is the name of your organization? [unknown]: Sample
+What is the name of your city or Locality? [unknown]: XYZ
+What is the name of your State or Province? [unknown]: ABC
+What is the two-letter country code for this unit? [unknown]: XX
+
+9) sign your APK
+10) Upload it to Google play store.
