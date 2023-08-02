@@ -27,6 +27,8 @@ Install python on Agent Server
 pip install boto3
 pip install boto3[crt]
 
+# for Reference Python Code https://docs.aws.amazon.com/devicefarm/latest/developerguide/api-ref.html#automation-example
+
 import boto3
 import os
 import requests
