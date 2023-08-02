@@ -30,6 +30,7 @@ pip install boto3
 pip install boto3[crt]
 
 Configure AWS on the Agent server:
+Install AWS CLI on your Agent Server
 aws configure
 aws_access_key_id = YOUR_ACCESS_KEY
 aws_secret_access_key = YOUR_SECRET_KEY
@@ -76,3 +77,14 @@ os.system('curl -X POST $preSignedUrl1 --form payload=@"$(build.artifactstagingd
 #print(r)
 print("upload done")
 del(preSignedUrl)
+
+3) If you are uploading it from Command Prompt then use below:
+Install AWS CLI on your Agent Server
+aws configure
+aws_access_key_id = YOUR_ACCESS_KEY
+aws_secret_access_key = YOUR_SECRET_KEY
+region=us-west-2
+
+create-upload --project-arn "<Project arn>" --name $(Apkfile) --type ANDROID_APP 
+
+curl -T "D:\perfcode\9\a\app-debug.apk" "Collect Pre signedurl from create-upload command" -v
