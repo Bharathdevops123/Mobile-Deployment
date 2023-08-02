@@ -1,5 +1,7 @@
 1. Upload .apk file to Saucelab for testing:
 -----------------------------------------
+
+#Use full link https://docs.saucelabs.com/dev/api/storage/
 If we are using sauce labs for Testing. Then we need to upload the apk file to sauce lab
 First we need to install Curl on Agent server because saucelabs api needs this to connect from windows to sauce labs.
 
