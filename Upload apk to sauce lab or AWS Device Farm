@@ -27,6 +27,12 @@ Install python on Agent Server
 pip install boto3
 pip install boto3[crt]
 
+Configure AWS on the Agent server:
+aws configure
+aws_access_key_id = YOUR_ACCESS_KEY
+aws_secret_access_key = YOUR_SECRET_KEY
+region=us-west-2 (where the file is getting uploaded)
+
 # for Reference Python Code https://docs.aws.amazon.com/devicefarm/latest/developerguide/api-ref.html#automation-example
 
 import boto3
