@@ -1,0 +1,68 @@
+1. Upload .apk file to Saucelab for testing:
+-----------------------------------------
+If we are using sauce labs for Testing. Then we need to upload the apk file to sauce lab
+First we need to install Curl on Agent server because saucelabs api needs this to connect from windows to sauce labs.
+
+If you have Git for Windows installed (if you downloaded Git from git-scm.com, the answer is yes), you have curl.exe under:
+
+ C:\Program Files\Git\mingw64\bin\
+Simply add the above path to PATH to system Environment variables and Local variables.
+
+C:\Program Files\Git\mingw64\bin\
+
+If you are running from server above path is fine. When you are execting from the build the the build fails as
+curl is not recognized as internal or external command. so you need to add below path to system environment variables and Local variables.
+C:\Program Files\Git\mingw64\bin\curl.exe
+
+Add below script in command prompt:
+
+D:
+cd $(build.artifactstagingdirectory)\
+curl -u "MedojuB2:AccessKey" -X POST "https://api.us-west-1.saucelabs.com/v1/storage/upload" --form payload=@"$(build.artifactstagingdirectory)/app-debug.apk" -v
+
+2. Upload apk to Device Farm using Python
+-----------------------------------------
+you can try below using Visual code on Agent server first.
+Install python on Agent Server
+pip install boto3
+pip install boto3[crt]
+
+import boto3
+import os
+import requests
+import string
+import random
+import datetime
+import time
+import urllib3
+
+client = boto3.client('devicefarm')
+
+#http://boto3.readthedocs.io/en/latest/reference/services/devicefarm.html#DeviceFarm.Client.create_upload
+
+response = client.create_upload(projectArn="<arn>",name="app-debug.apk",type='ANDROID_APP')
+#create the s3 bucket to store the upload test suite
+uploadArn = response['upload']['arn']
+preSignedUrl = response['upload']['url']
+print('uploadArn: ' + uploadArn + '\n')
+print('pre-signed url: ' + preSignedUrl + '\n')
+
+#print the status of the upload
+#http://boto3.readthedocs.io/en/latest/reference/services/devicefarm.html#DeviceFarm.Client.get_upload
+status = client.get_upload(arn=uploadArn)
+print("S3 Upload Bucket Status: " + status['upload']['status'] + '\n')
+
+print("Uploading file...")
+preSignedUrl1 = '"' + preSignedUrl + '"'
+print(preSignedUrl1)
+#os.popen('curl -T "$(build.artifactstagingdirectory)\app-debug.apk" $preSignedUrl1 -insecure -v').read() 
+#os.system('curl -T "$(build.artifactstagingdirectory)\app-debug.apk" $preSignedUrl1 -insecure -v')
+os.system('curl -X POST $preSignedUrl1 --form payload=@"$(build.artifactstagingdirectory)/app-debug.apk" -v')
+#open the file and make payload
+#payload = {'file':open(r"$(build.artifactstagingdirectory)/app-debug.apk",'rb')}
+#try and perform the upload
+#r = requests.put(url = preSignedUrl,files = payload)
+#print the response code back
+#print(r)
+print("upload done")
+del(preSignedUrl)
