@@ -163,5 +163,13 @@ What is the name of your city or Locality? [unknown]: XYZ
 What is the name of your State or Province? [unknown]: ABC
 What is the two-letter country code for this unit? [unknown]: XX
 
-9) sign your APK
-10) Upload it to Google play store.
+9) If you are uploading the aab file to Playstore then you have to generate aab file by following commands
+D:
+cd $(Build.SourcesDirectory)\android\
+gradlew bundleDebug
+
+AAB file will be present in the bwlo location
+D:\perfcode\9\s\android\app\build\outputs\bundle\debug
+
+10)sign your APK /aab 
+11) Upload aab to Google play store.
