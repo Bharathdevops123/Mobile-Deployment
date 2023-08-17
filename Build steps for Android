@@ -77,17 +77,12 @@ For Release version apk we just need to run the below command
 ----------------------------------------------------------
 
 Create assets folder in the source code android\app\src\main\
-
-
 Go to D:\perfcode\9\s\
 Run below command
-
 npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
-
 Go to D:\perfcode\9\s\android
-
-
-gradlew assembleRelease
+AS Google play store is accepting only .aab file so we need to create aab file
+gradlew BundleRelease
 
 You need to create this way in the Build tasks:
 -----------------------------------------------
