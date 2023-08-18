@@ -161,9 +161,9 @@ What is the two-letter country code for this unit? [unknown]: XX
 9) If you are uploading the aab file to Playstore then you have to generate aab file by following commands
 D:
 cd $(Build.SourcesDirectory)\android\
-gradlew bundleDebug
+gradlew BundleRelease
 
-AAB file will be present in the bwlo location
+AAB file will be present in the bewlo location
 D:\perfcode\9\s\android\app\build\outputs\bundle\debug
 
 10)sign your APK /aab 
