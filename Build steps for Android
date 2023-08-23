@@ -169,6 +169,23 @@ AAB file will be present in the bewlo location
 D:\perfcode\9\s\android\app\build\outputs\bundle\debug
 
 10)sign your APK /aab 
+
+you need to remove this section from android/app/build.gradle file
+
+      release {
+
+            // Caution! In production, you need to generate your own keystore file.
+
+            // see https://reactnative.dev/docs/signed-apk-android.
+
+            //signingConfig signingConfigs.debug
+
+            minifyEnabled enableProguardInReleaseBuilds
+
+            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+
+        }
+
 Upload your Key store files to Secure files in ADO
 Add download secure file task 
 
