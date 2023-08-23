@@ -172,4 +172,8 @@ D:\perfcode\9\s\android\app\build\outputs\bundle\debug
 Upload your Key store files to Secure files in ADO
 Add download secure file task 
 
+11) sign your aab file using Jarsigner. You can run this on command prompt. Add cmd tak to the build.
+jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore $(KeyStoreFile.secureFilePath) -storepass $(StorePassword) -keypass $(KeyPassword) $(build.artifactstagingdirectory)/*.aab $(KeyStoreAlias)
+
+
 11) Upload aab to Google play store.
