@@ -1,3 +1,5 @@
+For your refernce you can use see below url to set up CICD
+https://dzungvu.medium.com/build-aab-file-and-sign-key-later-b69adb1a5e6
 1) Install node js on Agent server (it will install npm automatically)
 check for npm -v
 
@@ -167,4 +169,7 @@ AAB file will be present in the bewlo location
 D:\perfcode\9\s\android\app\build\outputs\bundle\debug
 
 10)sign your APK /aab 
+Upload your Key store files to Secure files in ADO
+Add download secure file task 
+
 11) Upload aab to Google play store.
