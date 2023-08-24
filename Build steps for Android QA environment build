@@ -1,1 +1,188 @@
+
+For your refernce you can use see below url to set up CICD
+https://dzungvu.medium.com/build-aab-file-and-sign-key-later-b69adb1a5e6
+1) Install node js on Agent server (it will install npm automatically)
+check for npm -v
+
+b) Install Android Studio ( it wil install Java, React native and Android SDK automatically)
+
+c) check whether Java is installed or not
+Java --Version
+
+d) check whether sdk is installed or not.
+
+Go to Android studio and tools and SDK manager and see the version.
+
+In the source code (android/build.gradle) file you will have below.
+ext {
+         buildToolsVersion = "29.0.2"
+         minSdkVersion = 16
+         compileSdkVersion = 29
+-        targetSdkVersion = 29
++        targetSdkVersion = 29       
++        versionName = getMyVersionName()
++        versionCode = getMyVersionCode()
+     }
+
+by seeing at the source code you can install the required version.
+
+2)Add below lines in npmrc file
+
+you can find npmrc file at below location
+C:\Users\your-username\AppData\Roaming\npm\node_modules\npm
+
+npmrc: @fortawesome:registry=https://npm.fontawesome.com/
+//npm.fontawesome.com/:_authToken=<Value>
+
+3) Set environment variables
+ANDROID_HOME = C:\Users\Bharath\AppData\Local\Android\sdk
+SET PATH=$PATH:$ANDROID_HOME/emulator
+SET PATH=$PATH:$ANDROID_HOME/tools
+SET PATH=$PATH:$ANDROID_HOME/tools/bin
+SET PATH=$PATH:$ANDROID_HOME/platform-tools
+
+(or) 
+you can get the value and add manually
+
+ANDROID_HOME = C:\Users\Bharath\AppData\Local\Android\sdk
+Path  = C:\Users\Bharath\AppData\Local\Android\Sdk\platform-tools
+C:\Users\Bharath\AppData\Local\Android\sdk\emulator
+C:\Users\Bharath\AppData\Local\Android\sdk\tools
+C:\Users\Bharath\AppData\Local\Android\sdk\tools\bin
+
+
+1. npm install
+
+2 Add dependencies in package.json under dependencies
+Example:
+"devDependencies": {
+   "win-node-env": "^0.6.1"
+  }
+
+if above not resolves then you need to run the below command on the agent to install dependency
 npm install -g win-node-env
+
+3. Check what is the command for qa build in package.json and add that command in the command prompt and run it. 
+Example here we use below
+D:
+cd $(Build.SourcesDirectory)\
+npm run build-android-release-qa
+
+Apk/aab file will be generated here:
+$(Build.SourcesDirectory)\android\app\build\outputs\apk\Release\
+
+Note: here if android build hangs at this step then you have to do below steps on agent server
+
+If android build is hanging on npm task
+go to Agent server
+open command prompt 
+run below
+npm install
+npm run build-android-release-qa 
+
+Command prompt will also hang even after the build is successfull. after build is successfull you can cancel command prompt.
+This will run react native metro bundle. DONT close/cancel it It should run continuosly to run our builds without hanging.
+Make this running . now you go to the build and run the pipeline.
+
+---------------------------------------------------------------------------------------------
+
+5) steps:
+- task: CopyFiles@2
+  displayName: 'Copy apk to: $(build.artifactstagingdirectory)'
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)\android\app\build\outputs\apk\Release\'
+    Contents: |
+     *.apk
+     
+    TargetFolder: '$(build.artifactstagingdirectory)'
+    OverWrite: true
+
+6) Generate Keystore File on any windows machine 
+
+Command Format: keytool -genkey -v -storetype PKCS12 -keystore your_key_name.keystore -alias your_key_alias -keyalg RSA -keysize 2048 -validity 10000
+
+Enter your keystore password: password123
+Re-enter new password: password123
+What is your first and last name? [unknown]: Dani Williams
+What is the name of your organizational unit? [unknown]: Sample Company
+What is the name of your organization? [unknown]: Sample
+What is the name of your city or Locality? [unknown]: XYZ
+What is the name of your State or Province? [unknown]: ABC
+What is the two-letter country code for this unit? [unknown]: XX
+
+7) Upload it to the Secure files section under library in ADO
+
+8) Add variables and values to the pipeline
+KeyPassword = <password>
+KeyStoreAlias = <KeyStoreAlias>
+StorePassword = <KeyStoreAlias>
+Apkfile = $(build.artifactstagingdirectory)\app-debug.apk
+
+9)Add download secure file task and 
+add output variable KeyStoreFile
+steps:
+- task: DownloadSecureFile@1
+  displayName: 'Download secure file'
+  inputs:
+    secureFile: Release.keystore
+
+10) Sign your apk . 
+
+
+you need to remove this section from android/app/build.gradle file
+      release {
+            // Caution! In production, you need to generate your own keystore file.
+            // see https://reactnative.dev/docs/signed-apk-android.
+            //signingConfig signingConfigs.debug
+            minifyEnabled enableProguardInReleaseBuilds
+            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+        }
+
+Add command prompt
+steps:
+- script: 'jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore $(KeyStoreFile.secureFilePath) -storepass $(StorePassword) -keypass $(KeyPassword) $(build.artifactstagingdirectory)/*.apk $(KeyStoreAlias)'
+  displayName: 'Sign apk'
+
+11) Rename apk file with build number.
+steps:
+- script: |
+   D:
+   
+   cd $(build.artifactstagingdirectory)\
+   
+   ren "app-release-unsigned.apk"  "$(Build.BuildNumber)_app-QA-release.apk"
+  displayName: 'Rename APK file'
+
+
+12) Publish artifacts to Drop Location
+
+steps:
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: drop'
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)'
+
+
+7) Upload .apk file to Saucelab for testing:
+#Use full link https://docs.saucelabs.com/dev/api/storage/
+If we are using sauce labs for Testing. Then we need to upload the apk file to sauce lab
+First we need to install Curl on Agent server because saucelabs api needs this to connect from windows to sauce labs.
+
+If you have Git for Windows installed (if you downloaded Git from git-scm.com, the answer is yes), you have curl.exe under:
+
+ C:\Program Files\Git\mingw64\bin\
+Simply add the above path to PATH to system Environment variables and Local variables.
+
+C:\Program Files\Git\mingw64\bin\
+
+If you are running from server above path is fine. When you are execting from the build the the build fails as
+curl is not recognized as internal or external command. so you need to add below path to system environment variables and Local variables.
+C:\Program Files\Git\mingw64\bin\curl.exe
+
+Add below script in command prompt:
+
+D:
+cd $(build.artifactstagingdirectory)\
+curl -u "MedojuB2:AccessKey" -X POST "https://api.us-west-1.saucelabs.com/v1/storage/upload" --form payload=@"$(build.artifactstagingdirectory)/app-debug.apk" -v
+
+11) Upload aab to Google play store.
