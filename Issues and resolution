@@ -1,0 +1,3 @@
+Issues and resolution
+1) Error: This command was run via npm module 'win-node-env'
+solution: modify the command to npm run env NODE_ENV=production
