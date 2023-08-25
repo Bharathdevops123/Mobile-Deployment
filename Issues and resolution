@@ -7,5 +7,14 @@ Add bash before to the .sh files in package.json
 Example: "release-qa-reset": "bash ./build/releaseQAreset.sh",
 
 
-2)Error: This command was run via npm module 'win-node-env'
+2) We also need to install win-node-env
+This will set common environment variables
+npm install -g win-node-env
+
+Need to add this dependency in package.json
+   "devDependencies": {
+      "win-node-env": "^0.6.1"
+}
+
+3)Error: This command was run via npm module 'win-node-env'
 solution: modify the command to npm run env NODE_ENV=production
