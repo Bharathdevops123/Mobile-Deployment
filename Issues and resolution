@@ -1,3 +1,11 @@
 Issues and resolution
-1) Error: This command was run via npm module 'win-node-env'
+1) How to run shell commands in Windows:
+--------------------------------------
+If you have installed Git in your machine then you can add below path to your system environment variables.
+C:\Program Files\Git\bin
+Add bash before to the .sh files in package.json
+Example: "release-qa-reset": "bash ./build/releaseQAreset.sh",
+
+
+2)Error: This command was run via npm module 'win-node-env'
 solution: modify the command to npm run env NODE_ENV=production
