@@ -66,10 +66,10 @@ npm install -g win-node-env
 Example here we use below
 D:
 cd $(Build.SourcesDirectory)\
-npm run build-android-release-qa
+npm run build-android-release-qa-aab
 
-Apk/aab file will be generated here:
-$(Build.SourcesDirectory)\android\app\build\outputs\apk\Release\
+aab file will be generated here:
+$(Build.SourcesDirectory)\android\app\build\outputs\bundle\Release\
 
 Note: here if android build hangs at this step then you have to do below steps on agent server
 
@@ -78,7 +78,7 @@ go to Agent server
 open command prompt 
 run below
 npm install
-npm run build-android-release-qa 
+npm run build-android-release-qa-aab
 
 Command prompt will also hang even after the build is successfull. after build is successfull you can cancel command prompt.
 This will run react native metro bundle. DONT close/cancel it It should run continuosly to run our builds without hanging.
@@ -88,7 +88,7 @@ Make this running . now you go to the build and run the pipeline.
 
 5) steps:
 - task: CopyFiles@2
-  displayName: 'Copy apk to: $(build.artifactstagingdirectory)'
+  displayName: 'Copy aab to: $(build.artifactstagingdirectory)'
   inputs:
     SourceFolder: '$(Build.SourcesDirectory)\android\app\build\outputs\apk\Release\'
     Contents: |
@@ -126,7 +126,7 @@ steps:
   inputs:
     secureFile: Release.keystore
 
-10) Sign your apk . 
+10) Sign your aab . 
 
 
 you need to remove this section from android/app/build.gradle file
@@ -140,18 +140,18 @@ you need to remove this section from android/app/build.gradle file
 
 Add command prompt
 steps:
-- script: 'jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore $(KeyStoreFile.secureFilePath) -storepass $(StorePassword) -keypass $(KeyPassword) $(build.artifactstagingdirectory)/*.apk $(KeyStoreAlias)'
-  displayName: 'Sign apk'
+- script: 'jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore $(KeyStoreFile.secureFilePath) -storepass $(StorePassword) -keypass $(KeyPassword) $(build.artifactstagingdirectory)/*.aab $(KeyStoreAlias)'
+  displayName: 'Sign aab'
 
-11) Rename apk file with build number.
+11) Rename aab file with build number.
 steps:
 - script: |
    D:
    
    cd $(build.artifactstagingdirectory)\
    
-   ren "app-release-unsigned.apk"  "$(Build.BuildNumber)_app-QA-release.apk"
-  displayName: 'Rename APK file'
+   ren "app-release-unsigned.aab"  "$(Build.BuildNumber)_app-QA-release.aab"
+  displayName: 'Rename Aab file'
 
 
 12) Publish artifacts to Drop Location
@@ -162,27 +162,5 @@ steps:
   inputs:
     PathtoPublish: '$(build.artifactstagingdirectory)'
 
-
-7) Upload .apk file to Saucelab for testing:
-#Use full link https://docs.saucelabs.com/dev/api/storage/
-If we are using sauce labs for Testing. Then we need to upload the apk file to sauce lab
-First we need to install Curl on Agent server because saucelabs api needs this to connect from windows to sauce labs.
-
-If you have Git for Windows installed (if you downloaded Git from git-scm.com, the answer is yes), you have curl.exe under:
-
- C:\Program Files\Git\mingw64\bin\
-Simply add the above path to PATH to system Environment variables and Local variables.
-
-C:\Program Files\Git\mingw64\bin\
-
-If you are running from server above path is fine. When you are execting from the build the the build fails as
-curl is not recognized as internal or external command. so you need to add below path to system environment variables and Local variables.
-C:\Program Files\Git\mingw64\bin\curl.exe
-
-Add below script in command prompt:
-
-D:
-cd $(build.artifactstagingdirectory)\
-curl -u "MedojuB2:AccessKey" -X POST "https://api.us-west-1.saucelabs.com/v1/storage/upload" --form payload=@"$(build.artifactstagingdirectory)/app-debug.apk" -v
 
 11) Upload aab to Google play store.
